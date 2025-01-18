@@ -16,6 +16,10 @@ const CategorySchema = Schema(
       type: String,
       required: [true, "Please provide a branch"],
     },
+    isActive: {
+      type: Boolean,
+      default: true, // Default to active
+    },
   },
   { timestamps: true }
 );

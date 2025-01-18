@@ -62,6 +62,16 @@ export async function removeCategory(req, res) {
   }
 }
 
+export async function getActiveCategoriesByBranch(req, res) {
+  const branch = req.params.branch;
+  try {
+    const result = await Category.find({ branch, isActive: true });
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+}
+
 // Update a category by ID
 export async function updateCategory(req, res) {
   const id = req.params.id;

@@ -1,74 +1,75 @@
 import express from "express";
-import environment from "dotenv";
+import dotenv from "dotenv";
 import cors from "cors";
-import fileUpload from "express-fileupload";
-import ip from "ip"; // Import ip package
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 import routes from "./routes/routes.js";
+import path from "path";
+import { fileURLToPath } from "url";
+import ip from "ip"; // Dynamically fetch server IP
+import createImageUploadRoute from './config/uploadImage/imageupload.js';
 
-environment.config();
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const port = process.env.PORT || 5000;
 
 // Connect to the database
 connectDB();
 
-// Middleware for security
-app.use(helmet());
+// Security middleware
+app.use(helmet({
+  hidePoweredBy: true,
+}));
 
-// Rate limiter
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 100, // Limit each IP to 100 requests
 });
 app.use(limiter);
 
-// Middleware for CORS
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+// CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000'];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 
-// Middleware for parsing JSON and URL-encoded data
+// Parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// File upload middleware with error handling
-app.use(
-  fileUpload({
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max file size
-    abortOnLimit: true,
-    responseOnLimit: "File size exceeds the limit!",
-  })
-);
+// Static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Serve static files from the "public" directory
-app.use(express.static("public"));
-
-// API Routes
+// Routes
 app.use("/api", routes);
+app.use('/api/image', createImageUploadRoute(process.env.IMAGE_UPLOAD_DIR || 'uploads/images'));
+app.use('/api/profile', createImageUploadRoute(process.env.PROFILE_UPLOAD_DIR || 'uploads/profile'));
 
 // Root route
 app.get("/", (req, res) => {
-  const ipAddress = ip.address();
-  res.status(200).json({
-    message: `Server is Working. IP address: ${ipAddress}`,
-  });
+  res.status(200).json({ message: "Server is running." });
 });
 
 // Error handling middleware
 app.use(errorHandler);
 
-// Start the server
+// Start server
 app.listen(port, () => {
-  const ipAddress = ip.address();
-  console.log(`Server started on port ${port} at ${new Date()}.`);
-  console.log(`Server IP address: ${ipAddress}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Server started on port ${port} at ${new Date()}`);
+  console.log(`Server accessible at: http://${ip.address()}:${port}`);
 });

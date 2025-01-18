@@ -40,6 +40,9 @@ const ProductSchema = Schema(
       type: String,
       required: [true, "Please provide a branch"],
     },
+    photo: {
+      type: String, // URL or file path for the photo
+    },
   },
   { timestamps: true }
 );

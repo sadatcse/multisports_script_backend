@@ -6,6 +6,7 @@ import {
   getUserById,
   removeUser,
   updateUser,
+  loginUser,
 } from "./Users.controller.js";
 
 const UserRoutes = Router();
@@ -21,6 +22,9 @@ UserRoutes.get("/get-id/:id", getUserById);
 
 // Create a new user
 UserRoutes.post("/post", createUser);
+
+// Login user
+UserRoutes.post("/login", loginUser);
 
 // Delete a user by ID
 UserRoutes.delete("/delete/:id", removeUser);

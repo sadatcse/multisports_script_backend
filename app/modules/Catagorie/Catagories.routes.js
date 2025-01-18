@@ -6,6 +6,7 @@ import {
   getCategoryById,
   removeCategory,
   updateCategory,
+  getActiveCategoriesByBranch,
 } from "./Catagories.controller.js";
 
 const CategoryRoutes = Router();
@@ -27,5 +28,7 @@ CategoryRoutes.delete("/delete/:id", removeCategory);
 
 // Update a category by ID
 CategoryRoutes.put("/update/:id", updateCategory);
+
+CategoryRoutes.get("/:branch/active", getActiveCategoriesByBranch);
 
 export default CategoryRoutes;
