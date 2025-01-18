@@ -12,17 +12,20 @@ const ProductSchema = Schema(
       required: [true, "Please provide a product name"],
     },
     flavour: {
-      type: String,
+      type: Boolean,
+      default: false, 
     },
     cFlavor: {
-      type: String,
+      type: Boolean,
+      default: false, 
     },
     addOns: {
-      type: [String], // Array of add-ons
+      type: Boolean,
+      default: false, 
     },
     vat: {
       type: Number,
-      default: 0, // VAT percentage
+      default: 0, 
     },
     price: {
       type: Number,
