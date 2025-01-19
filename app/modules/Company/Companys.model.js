@@ -30,9 +30,6 @@ const CompanySchema = Schema(
       type: String,
       required: [true, "Please provide the branch"],
     },
-    background: {
-      type: String,
-    },
   },
   { timestamps: true }
 );

@@ -1,6 +1,19 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
+// Function to generate invoice serial number
+const generateInvoiceSerial = () => {
+  const now = new Date();
+  const year = now.getFullYear().toString().slice(-2);
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  const date = now.getDate().toString().padStart(2, '0');
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+  return `${year}${month}${date}${hours}${minutes}${seconds}`;
+};
+
+// Product schema
 const ProductSchema = Schema({
   productName: { type: String, required: true },
   qty: { type: Number, required: true },
@@ -8,16 +21,19 @@ const ProductSchema = Schema({
   subtotal: { type: Number, required: true },
 });
 
+// Invoice schema
 const InvoiceSchema = Schema(
   {
     invoiceSerial: {
       type: String,
       required: [true, "Please provide an invoice serial"],
       unique: true,
+      default: generateInvoiceSerial, // Automatically generate serial
     },
     dateTime: {
       type: Date,
       required: [true, "Please provide the date and time"],
+      default: Date.now, // Default to current date and time
     },
     loginUserEmail: {
       type: String,

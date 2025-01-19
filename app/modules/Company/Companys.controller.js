@@ -25,6 +25,16 @@ export async function getCompanyById(req, res) {
   }
 }
 
+export const getCompaniesByBranch = async (req, res) => {
+  const { branch } = req.params;
+  try {
+    const companies = await Company.find({ branch });
+    res.status(200).json(companies);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch companies", error: err.message });
+  }
+};
+
 // Create a new company
 export async function createCompany(req, res) {
   try {

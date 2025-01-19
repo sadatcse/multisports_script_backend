@@ -5,6 +5,7 @@ import {
   getCompanyById,
   updateCompany,
   removeCompany,
+  getCompaniesByBranch,
 } from "./Companys.controller.js";
 
 const CompanyRoutes = Router();
@@ -23,5 +24,7 @@ CompanyRoutes.put("/update/:id", updateCompany);
 
 // Delete a company by ID
 CompanyRoutes.delete("/delete/:id", removeCompany);
+
+CompanyRoutes.get("/branch/:branch", getCompaniesByBranch);
 
 export default CompanyRoutes;
