@@ -6,6 +6,11 @@ import {
   getInvoicesByBranch,
   removeInvoice,
   updateInvoice,
+  getDashboardByBranch,
+  getItemByBranch,
+  getPendingByBranch,
+  getInvoicesByDateRange,
+  getdatesByBranch,
 } from "./Invoices.controller.js";
 
 const InvoiceRoutes = Router();
@@ -13,9 +18,15 @@ const InvoiceRoutes = Router();
 // Get all invoices
 InvoiceRoutes.get("/", getAllInvoices);
 
+InvoiceRoutes.get("/:branch/dashboard", getDashboardByBranch);
+
+InvoiceRoutes.get("/:branch/item", getItemByBranch);
 // Get invoices by branch
 InvoiceRoutes.get("/:branch/get-all", getInvoicesByBranch);
 
+InvoiceRoutes.get("/:branch/date/:date", getdatesByBranch);
+
+InvoiceRoutes.get("/:branch/status/:status", getPendingByBranch);
 // Get invoice by ID
 InvoiceRoutes.get("/get-id/:id", getInvoiceById);
 
@@ -27,5 +38,8 @@ InvoiceRoutes.delete("/delete/:id", removeInvoice);
 
 // Update an invoice by ID
 InvoiceRoutes.put("/update/:id", updateInvoice);
+
+InvoiceRoutes.get("/:branch/date-range", getInvoicesByDateRange);
+
 
 export default InvoiceRoutes;

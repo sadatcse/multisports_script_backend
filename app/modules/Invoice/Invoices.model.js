@@ -59,6 +59,9 @@ const InvoiceSchema = Schema(
       type: Number,
       required: true,
     },
+    vat: {
+      type: Number,
+    },
     orderType: {
       type: String,
       enum: ["dine-in", "takeaway", "delivery"],
@@ -75,6 +78,11 @@ const InvoiceSchema = Schema(
     totalSale: {
       type: Number,
       required: true,
+    },
+    orderStatus: {
+      type: String,
+      enum: ["pending", "completed", "cancelled", "cooking", "served"],
+      default: "pending",
     },
   },
   { timestamps: true }
