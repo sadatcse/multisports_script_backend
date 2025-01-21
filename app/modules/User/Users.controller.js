@@ -1,5 +1,6 @@
 import User from "./Users.model.js";
-
+import UserLog from "../UserLog/UserLog.model.js";
+import jwt from "jsonwebtoken";
 // Get all users
 export async function getAllUsers(req, res) {
   try {
@@ -54,14 +55,12 @@ export async function createUser(req, res) {
 // Login user
 export async function loginUser(req, res) {
   const { email, password } = req.body;
-  console.log(email);
   try {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // Check if user is inactive
     if (user.status === "inactive") {
       return res.status(403).json({ message: "Account is inactive. Please contact support." });
     }
@@ -71,7 +70,19 @@ export async function loginUser(req, res) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    res.status(200).json({ message: "Login successful", user });
+    // Log login time
+    await UserLog.create({
+      userEmail: user.email,
+      username: user.name || "no name",
+      loginTime: new Date(),
+      role: user.role,
+      branch:user.branch,
+    });
+
+    // Generate JWT token
+    const token = jwt.sign({ id: user._id, role: user.role }, "secretKey", { expiresIn: "1h" });
+
+    res.status(200).json({ message: "Login successful", user, token });
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
@@ -87,6 +98,21 @@ export async function removeUser(req, res) {
     } else {
       res.status(404).json({ message: "User not found" });
     }
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+}
+
+export async function logoutUser(req, res) {
+  const { email } = req.body;
+  try {
+    // Find the most recent login entry
+    const log = await UserLog.findOne({ userEmail: email }).sort({ createdAt: -1 });
+    if (log && !log.logoutTime) {
+      log.logoutTime = new Date();
+      await log.save();
+    }
+    res.status(200).json({ message: "Logout successful" });
   } catch (err) {
     res.status(500).send({ error: err.message });
   }

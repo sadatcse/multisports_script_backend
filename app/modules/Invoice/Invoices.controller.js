@@ -1,6 +1,6 @@
 import Invoice from "./Invoices.model.js";
 import moment from 'moment';
-
+import Product from "../Product/Product.model.js";
 // Get all invoices
 export async function getAllInvoices(req, res) {
   try {
@@ -11,6 +11,82 @@ export async function getAllInvoices(req, res) {
   }
 }
 
+export async function getSalesByDateRange(req, res) {
+  const { branch } = req.params;
+  const { category, product, startDate, endDate } = req.query;
+
+  try {
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: "Start date and end date are required" });
+    }
+
+    let invoices;
+
+    if (startDate === endDate) {
+      // Fetch all branch orders for the specific day
+      const branchOrders = await Invoice.find({ branch });
+      const todaysDate = startDate;
+
+      invoices = branchOrders.filter(invoice =>
+        moment(invoice.dateTime).format("YYYY-MM-DD") === todaysDate
+      );
+    } else {
+      // Fetch invoices within the date range
+      invoices = await Invoice.find({
+        branch,
+        dateTime: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      });
+    }
+
+    // If no invoices are found, return an empty array
+    if (!invoices || invoices.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    // Process invoices to filter and calculate product data
+    let filteredProducts = [];
+
+    invoices.forEach(invoice => {
+      invoice.products.forEach(prod => {
+        if (product === "All" || prod.productName === product) {
+          const existingProduct = filteredProducts.find(p => p.productName === prod.productName);
+
+          if (existingProduct) {
+            existingProduct.qty += prod.qty;
+            existingProduct.rate = prod.rate; // Update rate (assuming rates may change)
+          } else {
+            filteredProducts.push({
+              productName: prod.productName,
+              qty: prod.qty,
+              rate: prod.rate,
+            });
+          }
+        }
+      });
+    });
+
+    if (category !== "All") {
+      // Fetch products under the specified category
+      const productsInCategory = await Product.find({ category });
+      const productNamesInCategory = productsInCategory.map(p => p.productName);
+
+      filteredProducts = filteredProducts.filter(prod =>
+        productNamesInCategory.includes(prod.productName)
+      );
+    }
+
+    const responseData = filteredProducts;
+
+    res.status(200).json(responseData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+
 export async function getInvoicesByDateRange(req, res) {
   const { branch } = req.params;
   const { startDate, endDate } = req.query;
@@ -20,17 +96,35 @@ export async function getInvoicesByDateRange(req, res) {
       return res.status(400).json({ error: "Start date and end date are required" });
     }
 
-    const invoices = await Invoice.find({
-      branch,
-      dateTime: {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate),
-      },
-    });
+    let invoices;
+
+    if (startDate === endDate) {
+      // Fetch all branch orders
+      const branchOrders = await Invoice.find({ branch });
+      const todaysDate = moment(startDate).format("YYYY-MM-DD");
+
+      invoices = branchOrders.filter(invoice =>
+        moment(invoice.dateTime).format("YYYY-MM-DD") === todaysDate
+      );
+    } else {
+      // Fetch invoices within the date range
+      invoices = await Invoice.find({
+        branch,
+        dateTime: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate),
+        },
+      });
+    }
+
+    // If no invoices are found, return an empty array
+    if (!invoices || invoices.length === 0) {
+      return res.status(200).json([]);
+    }
 
     // Aggregate data by date
     const aggregatedData = invoices.reduce((result, invoice) => {
-      const date = new Date(invoice.dateTime).toISOString().split('T')[0]; // Extract date only
+      const date = moment(invoice.dateTime).format("YYYY-MM-DD");
 
       if (!result[date]) {
         result[date] = {
@@ -55,17 +149,12 @@ export async function getInvoicesByDateRange(req, res) {
       return result;
     }, {});
 
-    // If no invoices are found, return an empty array
-    if (!invoices.length) {
-      return res.status(200).json([]);
-    }
-
     // Convert aggregated data into an array
     const responseData = Object.values(aggregatedData);
 
     res.status(200).json(responseData);
   } catch (err) {
-    res.status(500).send({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 }
 

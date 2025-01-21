@@ -7,7 +7,20 @@ import {
   removeUser,
   updateUser,
   loginUser,
+  logoutUser,
 } from "./Users.controller.js";
+
+
+export function authenticateToken(req, res, next) {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "Access token missing" });
+
+  jwt.verify(token, "secretKey", (err, user) => {
+    if (err) return res.status(403).json({ message: "Invalid token" });
+    req.user = user;
+    next();
+  });
+}
 
 const UserRoutes = Router();
 
@@ -25,6 +38,8 @@ UserRoutes.post("/post", createUser);
 
 // Login user
 UserRoutes.post("/login", loginUser);
+
+UserRoutes.post("/logout", logoutUser);
 
 // Delete a user by ID
 UserRoutes.delete("/delete/:id", removeUser);

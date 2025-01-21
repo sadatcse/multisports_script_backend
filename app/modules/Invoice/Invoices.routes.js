@@ -11,6 +11,7 @@ import {
   getPendingByBranch,
   getInvoicesByDateRange,
   getdatesByBranch,
+  getSalesByDateRange,
 } from "./Invoices.controller.js";
 
 const InvoiceRoutes = Router();
@@ -41,5 +42,5 @@ InvoiceRoutes.put("/update/:id", updateInvoice);
 
 InvoiceRoutes.get("/:branch/date-range", getInvoicesByDateRange);
 
-
+InvoiceRoutes.get("/:branch/sales", getSalesByDateRange);
 export default InvoiceRoutes;
