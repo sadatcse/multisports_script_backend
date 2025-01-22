@@ -8,6 +8,7 @@ import {
   updateUser,
   loginUser,
   logoutUser,
+  changePassword,
 } from "./Users.controller.js";
 
 
@@ -47,4 +48,9 @@ UserRoutes.delete("/delete/:id", removeUser);
 // Update a user by ID
 UserRoutes.put("/update/:id", updateUser);
 
+UserRoutes.put("/change-password", changePassword);
+
 export default UserRoutes;
+
+
+// Add the route for changing the password

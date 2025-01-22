@@ -41,7 +41,8 @@ const ProductSchema = Schema(
     },
     branch: {
       type: String,
-      required: [true, "Please provide a branch"],
+      // required: [true, "Please provide a branch"],
+      default: "teaxo",
     },
     photo: {
       type: String, // URL or file path for the photo
