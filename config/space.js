@@ -8,7 +8,7 @@ export async function uploadObject(key, file, mimetype) {
   const client = new S3Client({
     // endpoint: "https://sgp1.digitaloceanspaces.com", // Find your endpoint in the control panel, under Settings. Prepend "https://".
     forcePathStyle: false,
-    region: "eu-north-1", // Must be "us-east-1" when creating new Spaces. Otherwise, use the region in your endpoint (e.g. nyc3).
+    region: "ap-southeast-1", // Must be "us-east-1" when creating new Spaces. Otherwise, use the region in your endpoint (e.g. nyc3).
     credentials: {
       accessKeyId: process.env.ACCESS_KEY_ID, // Access key pair. You can create access key pairs using the control panel or API.
       secretAccessKey: process.env.SPACES_SECRET, // Secret access key defined through an environment variable.
@@ -45,7 +45,7 @@ export async function deleteObject(key) {
   const client = new S3Client({
     // Find your endpoint in the control panel, under Settings. Prepend "https://".
     forcePathStyle: false,
-    region: "Europe (Stockholm) eu-north-1", // Must be "us-east-1" when creating new Spaces. Otherwise, use the region in your endpoint (e.g. nyc3).
+    region: "ap-southeast-1", // Must be "us-east-1" when creating new Spaces. Otherwise, use the region in your endpoint (e.g. nyc3).
     credentials: {
       accessKeyId: process.env.ACCESS_KEY_ID, // Access key pair. You can create access key pairs using the control panel or API.
       secretAccessKey: process.env.SPACES_SECRET, // Secret access key defined through an environment variable.
@@ -75,7 +75,7 @@ export async function updateObject(createKey, file, deleteKey, mimetype) {
   const client = new S3Client({
     // endpoint: "https://sgp1.digitaloceanspaces.com", // Find your endpoint in the control panel, under Settings. Prepend "https://".
     forcePathStyle: false,
-    region: "Europe (Stockholm) eu-north-1", // Must be "us-east-1" when creating new Spaces. Otherwise, use the region in your endpoint (e.g. nyc3).
+    region: "ap-southeast-1", // Must be "us-east-1" when creating new Spaces. Otherwise, use the region in your endpoint (e.g. nyc3).
     credentials: {
       accessKeyId: process.env.ACCESS_KEY_ID, // Access key pair. You can create access key pairs using the control panel or API.
       secretAccessKey: process.env.SPACES_SECRET, // Secret access key defined through an environment variable.
@@ -131,6 +131,7 @@ export async function getImageUrl(req, res) {
   const image = req?.files?.image;
 
   const imageUrl = `${pathName}/${Date.now() + "-" + image.name}`;
+  console.log(imageUrl);
 
   const resp = await uploadObject(imageUrl, image.data);
 

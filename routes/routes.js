@@ -11,7 +11,7 @@ import ProductRoutes from "../app/modules/Product/Product.routes.js";
 import userRoutes from "../app/modules/User/Users.routes.js";
 import VATTypeRoutes from "../app/modules/Vattype/Vattypes.routes.js";
 import UserlogRoutes from "../app/modules/UserLog/UserLog.routes.js";
-
+import { getImageUrl } from "../config/space.js";
 
 
 import { sendTestEmail } from "../controllers/emailController.js";
@@ -31,5 +31,6 @@ routes.use("/vattype", VATTypeRoutes);
 routes.use("/userlog", UserlogRoutes);
 // Define the email sending route
 routes.post("/send-email", sendTestEmail);
+routes.post("/get-image-url", getImageUrl);
 
 export default routes;
