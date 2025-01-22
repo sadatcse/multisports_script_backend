@@ -63,11 +63,16 @@ app.use("/api", routes);
 // Root route
 app.use(errorHandler);
 
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Server is running." });
 });
-// Start the server
+
+// Error handling middleware
+app.use(errorHandler);
+
+// Start server
 app.listen(port, () => {
-  console.log(`Server started on port ${port} at ${new Date()}.`.green);
+
+  console.log(`Server started at ${new Date()}`);
+
 });
