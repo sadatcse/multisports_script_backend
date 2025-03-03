@@ -5,7 +5,9 @@ import {
   getProductsByCategory,
   getProductById,
   removeProduct,
+  getProductsByCategoryAndBranch,
   updateProduct,
+  getProductsByBranch,
 } from "./Product.controller.js";
 
 const ProductRoutes = Router();
@@ -16,6 +18,10 @@ ProductRoutes.get("/", getAllProducts);
 // Get products by category
 ProductRoutes.get("/:category/get-all", getProductsByCategory);
 
+// Get products by branch
+ProductRoutes.get("/branch/:branch/get-all", getProductsByBranch);
+
+ProductRoutes.get("/branch/:branch/category/:category/get-all", getProductsByCategoryAndBranch);
 // Get product by ID
 ProductRoutes.get("/get-id/:id", getProductById);
 

@@ -21,6 +21,34 @@ export async function getProductsByCategory(req, res) {
   }
 }
 
+export async function getProductsByCategoryAndBranch(req, res) {
+  const { category, branch } = req.params;
+
+  try {
+ 
+    const filter = { branch };
+    if (category !== "all") {
+      filter.category = category;
+    }
+
+    const result = await Product.find(filter);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+}
+
+
+export async function getProductsByBranch(req, res) {
+  const { branch } = req.params;
+  try {
+    const result = await Product.find({ branch });
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+}
+
 // Get product by ID
 export async function getProductById(req, res) {
   const id = req.params.id;

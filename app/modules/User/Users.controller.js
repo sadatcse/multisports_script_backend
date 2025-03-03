@@ -79,9 +79,13 @@ export async function loginUser(req, res) {
       branch:user.branch,
     });
 
-    // Generate JWT token
     const token = jwt.sign({ id: user._id, role: user.role }, "secretKey", { expiresIn: "24h" });
-    res.status(200).json({ message: "Login successful", user, token });
+
+    // Remove password field from user object before sending response
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.status(200).json({ message: "Login successful", user: userResponse, token });
   } catch (err) {
     res.status(500).send({ error: err.message });
   }

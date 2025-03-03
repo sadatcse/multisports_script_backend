@@ -33,6 +33,12 @@ const CompanySchema = Schema(
     website: {
       type: String, // Not required
     },
+    binNumber: {
+      type: String, // Add the new Bin Number field
+    },
+    tinNumber: {
+      type: String, // Add the new Tin Number field
+    }
   },
   { timestamps: true }
 );

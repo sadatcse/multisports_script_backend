@@ -9,7 +9,7 @@ import connectDB from "./config/db.js";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 import routes from "./routes/routes.js";
 import path from "path";
-
+import passport from "passport";
 
 
 
@@ -27,10 +27,13 @@ app.use(helmet({
   hidePoweredBy: true,
 }));
 
+app.use(passport.initialize());
+
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 100, // Limit each IP to 100 requests
+  max: 1000, // Limit each IP to 100 requests
 });
 app.use(limiter);
 

@@ -10,7 +10,8 @@ import {
   logoutUser,
   changePassword,
 } from "./Users.controller.js";
-
+import jwt from "jsonwebtoken";
+import passport from 'passport';
 
 export function authenticateToken(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
@@ -25,32 +26,42 @@ export function authenticateToken(req, res, next) {
 
 const UserRoutes = Router();
 
-// Get all users
-UserRoutes.get("/", getAllUsers);
+// Public routes (no authentication required)
+UserRoutes.post("/login", loginUser); // Login does not require a token
+UserRoutes.post("/post", createUser); // If creating a user should also be public
 
-// Get users by branch
-UserRoutes.get("/:branch/get-all", getUserByBranch);
+// Protected routes (require authentication)
+UserRoutes.get("/", authenticateToken, getAllUsers);
+UserRoutes.get("/:branch/get-all", authenticateToken, getUserByBranch);
+UserRoutes.get("/get-id/:id", authenticateToken, getUserById);
+UserRoutes.post("/logout", authenticateToken, logoutUser);
+UserRoutes.delete("/delete/:id", authenticateToken, removeUser);
+UserRoutes.put("/update/:id", authenticateToken, updateUser);
+UserRoutes.put("/change-password", authenticateToken, changePassword);
 
-// Get user by ID
-UserRoutes.get("/get-id/:id", getUserById);
+UserRoutes.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// Create a new user
-UserRoutes.post("/post", createUser);
+// Google callback route
+UserRoutes.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Successful login, send the JWT token
+    const token = jwt.sign({ id: req.user._id, role: req.user.role }, 'secretKey', { expiresIn: '24h' });
+    res.status(200).json({ message: 'Google login successful', user: req.user, token });
+  }
+);
 
-// Login user
-UserRoutes.post("/login", loginUser);
+// Facebook login route
+UserRoutes.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
 
-UserRoutes.post("/logout", logoutUser);
-
-// Delete a user by ID
-UserRoutes.delete("/delete/:id", removeUser);
-
-// Update a user by ID
-UserRoutes.put("/update/:id", updateUser);
-
-UserRoutes.put("/change-password", changePassword);
+// Facebook callback route
+UserRoutes.get('/facebook/callback', 
+  passport.authenticate('facebook', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Successful login, send the JWT token
+    const token = jwt.sign({ id: req.user._id, role: req.user.role }, 'secretKey', { expiresIn: '24h' });
+    res.status(200).json({ message: 'Facebook login successful', user: req.user, token });
+  }
+);
 
 export default UserRoutes;
-
-
-// Add the route for changing the password

@@ -84,6 +84,16 @@ const InvoiceSchema = Schema(
       enum: ["pending", "completed", "cancelled", "cooking", "served"],
       default: "pending",
     },
+    tableName: {
+      type: String,
+    },
+    customerName: {
+      type: String,
+
+    },
+    customerMobile: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
