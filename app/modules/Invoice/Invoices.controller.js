@@ -86,6 +86,75 @@ export async function getSalesByDateRange(req, res) {
   }
 }
 
+export async function getInvoicesByCounterDate(req, res) {
+  const { branch, counter } = req.params;
+  const { startDate, endDate } = req.query;
+
+  try {
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: "Start date and end date are required" });
+    }
+
+    let invoices;
+
+    if (startDate === endDate) {
+      // Fetch invoices for the selected branch and counter on a single day
+      const branchCounterOrders = await Invoice.find({ branch, counter });
+      const todaysDate = moment(startDate).format("YYYY-MM-DD");
+
+      invoices = branchCounterOrders.filter(invoice =>
+        moment(invoice.dateTime).format("YYYY-MM-DD") === todaysDate
+      );
+    } else {
+      // Fetch invoices for the selected branch and counter within the date range
+      invoices = await Invoice.find({
+        branch,
+        counter,
+        dateTime: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate),
+        },
+      });
+    }
+
+    if (!invoices || invoices.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    // Aggregate data by date
+    const aggregatedData = invoices.reduce((result, invoice) => {
+      const date = moment(invoice.dateTime).format("YYYY-MM-DD");
+
+      if (!result[date]) {
+        result[date] = {
+          date,
+          orderCount: 0,
+          totalQty: 0,
+          totalSubtotal: 0,
+          totalDiscount: 0,
+          totalAmount: 0,
+          totalVat: 0,
+        };
+      }
+
+      result[date].orderCount += 1;
+      result[date].totalQty += invoice.products?.reduce((sum, product) => sum + (product.qty || 0), 0) || 0;
+      result[date].totalSubtotal += invoice.products?.reduce((sum, product) => sum + (product.subtotal || 0), 0) || 0;
+      result[date].totalDiscount += invoice.discount || 0;
+      result[date].totalAmount += invoice.totalAmount || 0;
+      result[date].totalVat += invoice.vat || 0;
+
+      return result;
+    }, {});
+
+    // Convert aggregated data into an array
+    const responseData = Object.values(aggregatedData);
+
+    res.status(200).json(responseData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
 export async function getInvoicesByDateRange(req, res) {
   const { branch } = req.params;

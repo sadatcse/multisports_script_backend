@@ -71,19 +71,6 @@ export async function createCustomer(req, res) {
   try {
     const { email, mobile } = req.body;
 
-    // Check if a customer with the same email already exists
-    const emailExists = await Customer.findOne({ email });
-    if (emailExists) {
-      return res.status(401).json({ error: "Email is already taken" });
-    }
-
-    // Check if a customer with the same mobile already exists
-    const mobileExists = await Customer.findOne({ mobile });
-    if (mobileExists) {
-      return res.status(402).json({ error: "Mobile number is already taken" });
-    }
-
-    // If no duplicates, proceed to create the customer
     const customerData = req.body;
     const result = await Customer.create(customerData);
     res.status(201).json(result);

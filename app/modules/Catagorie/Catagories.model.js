@@ -10,7 +10,7 @@ const CategorySchema = Schema(
     serial: {
       type: Number,
       required: [true, "Please provide a serial number"],
-      unique: true,
+  
     },
     branch: {
       type: String,

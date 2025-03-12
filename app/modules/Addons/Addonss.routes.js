@@ -7,7 +7,7 @@ import {
   removeAddon,
   getAddonsByBranch,
 } from "./Addonss.controller.js";
-
+import { authenticateToken } from "../../../middleware/authMiddleware.js"; 
 const AddonsRoutes = Router();
 
 // Get all addons

@@ -12,17 +12,10 @@ import {
 } from "./Users.controller.js";
 import jwt from "jsonwebtoken";
 import passport from 'passport';
+import { authenticateToken } from "../../../middleware/authMiddleware.js"; 
 
-export function authenticateToken(req, res, next) {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "Access token missing" });
 
-  jwt.verify(token, "secretKey", (err, user) => {
-    if (err) return res.status(403).json({ message: "Invalid token" });
-    req.user = user;
-    next();
-  });
-}
+
 
 const UserRoutes = Router();
 

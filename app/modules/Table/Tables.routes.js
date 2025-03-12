@@ -7,24 +7,16 @@ import {
   removeTable,
   getTablesByBranch,
 } from "./Tables.controller.js";
+import { authenticateToken } from "../../../middleware/authMiddleware.js"; 
 
 const TableRoutes = Router();
 
-// Get all tables
-TableRoutes.get("/", getAllTables);
-
-// Get table by ID
-TableRoutes.get("/get-id/:id", getTableById);
-
-// Create a new table
-TableRoutes.post("/post", createTable);
-
-// Update a table by ID
-TableRoutes.put("/update/:id", updateTable);
-
-// Delete a table by ID
-TableRoutes.delete("/delete/:id", removeTable);
-
-TableRoutes.get("/branch/:branch", getTablesByBranch);
+// Protect all routes with authentication middleware
+TableRoutes.get("/", authenticateToken, getAllTables);
+TableRoutes.get("/get-id/:id", authenticateToken, getTableById);
+TableRoutes.post("/post", authenticateToken, createTable);
+TableRoutes.put("/update/:id", authenticateToken, updateTable);
+TableRoutes.delete("/delete/:id", authenticateToken, removeTable);
+TableRoutes.get("/branch/:branch", authenticateToken, getTablesByBranch);
 
 export default TableRoutes;

@@ -16,8 +16,14 @@ import TableRoutes from "../app/modules/Table/Tables.routes.js";
 import CustomerRoutes from "../app/modules/Customer/Customers.routes.js";
 import { sendTestEmail } from "../controllers/emailController.js";
 
+import TransactionLogRoutes from "../app/modules/TransactionLog/TransactionLog.routes.js";
+import transactionLogger from "../middleware/transactionLogger.js";
+import { getSuperAdminDashboard } from "../controllers/dashboardController.js"; 
+import { getAllBranches } from "../controllers/branchController.js";
+
 const routes = Router();
 
+routes.use(transactionLogger);
 routes.use("/addons", AddonsRoutes);
 routes.use("/category", CategoryRoutes);
 routes.use("/company", CompanyRoutes);
@@ -31,8 +37,10 @@ routes.use("/vattype", VATTypeRoutes);
 routes.use("/userlog", UserlogRoutes);
 routes.use("/table", TableRoutes);
 routes.use("/customer", CustomerRoutes);
-// Define the email sending route
 routes.post("/send-email", sendTestEmail);
 routes.post("/get-image-url", getImageUrl);
+routes.use("/transaction-logs", TransactionLogRoutes);
+routes.get("/superadmin/dashboard", getSuperAdminDashboard);
+routes.get("/branch", getAllBranches);
 
 export default routes;

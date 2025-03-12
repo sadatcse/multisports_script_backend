@@ -8,27 +8,17 @@ import {
   updateCategory,
   getActiveCategoriesByBranch,
 } from "./Catagories.controller.js";
+import { authenticateToken } from "../../../middleware/authMiddleware.js"; 
 
 const CategoryRoutes = Router();
 
-// Get all categories
-CategoryRoutes.get("/", getAllCategories);
-
-// Get categories by branch
-CategoryRoutes.get("/:branch/get-all", getCategoryByBranch);
-
-// Get category by ID
-CategoryRoutes.get("/get-id/:id", getCategoryById);
-
-// Create a new category
-CategoryRoutes.post("/post", createCategory);
-
-// Delete a category by ID
-CategoryRoutes.delete("/delete/:id", removeCategory);
-
-// Update a category by ID
-CategoryRoutes.put("/update/:id", updateCategory);
-
-CategoryRoutes.get("/:branch/active", getActiveCategoriesByBranch);
+// Protect all routes with authentication middleware
+CategoryRoutes.get("/", authenticateToken, getAllCategories);
+CategoryRoutes.get("/:branch/get-all", authenticateToken, getCategoryByBranch);
+CategoryRoutes.get("/get-id/:id", authenticateToken, getCategoryById);
+CategoryRoutes.post("/post", authenticateToken, createCategory);
+CategoryRoutes.delete("/delete/:id", authenticateToken, removeCategory);
+CategoryRoutes.put("/update/:id", authenticateToken, updateCategory);
+CategoryRoutes.get("/:branch/active", authenticateToken, getActiveCategoriesByBranch);
 
 export default CategoryRoutes;

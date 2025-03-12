@@ -8,21 +8,23 @@ import {
   getPaginatedUserLogs,
   getUserLogsByBranch,
 } from "./UserLog.controller.js";
+import { authenticateToken } from "../../../middleware/authMiddleware.js"; 
 
 const UserLogRoutes = Router();
 
-// Get all user logs
-UserLogRoutes.get("/", getAllUserLogs);
+// Get all user logs (Protected)
+UserLogRoutes.get("/", authenticateToken, getAllUserLogs);
 
-// Get user logs by branch
-UserLogRoutes.get("/:branch/get-all", getUserLogsByBranch);
+// Get user logs by branch (Protected)
+UserLogRoutes.get("/:branch/get-all", authenticateToken, getUserLogsByBranch);
 
-// Get user log by ID
-UserLogRoutes.get("/get-id/:id", getUserLogById);
+// Get user log by ID (Protected)
+UserLogRoutes.get("/get-id/:id", authenticateToken, getUserLogById);
 
-// Delete a user log by ID
-UserLogRoutes.delete("/delete/:id", removeUserLog);
+// Delete a user log by ID (Protected)
+UserLogRoutes.delete("/delete/:id", authenticateToken, removeUserLog);
 
-UserLogRoutes.get("/paginated", getPaginatedUserLogs);
+// Get paginated user logs (Protected)
+UserLogRoutes.get("/paginated", authenticateToken, getPaginatedUserLogs);
 
 export default UserLogRoutes;

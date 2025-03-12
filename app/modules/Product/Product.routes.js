@@ -9,29 +9,18 @@ import {
   updateProduct,
   getProductsByBranch,
 } from "./Product.controller.js";
+import { authenticateToken } from "../../../middleware/authMiddleware.js"; 
 
 const ProductRoutes = Router();
 
-// Get all products
-ProductRoutes.get("/", getAllProducts);
-
-// Get products by category
-ProductRoutes.get("/:category/get-all", getProductsByCategory);
-
-// Get products by branch
-ProductRoutes.get("/branch/:branch/get-all", getProductsByBranch);
-
-ProductRoutes.get("/branch/:branch/category/:category/get-all", getProductsByCategoryAndBranch);
-// Get product by ID
-ProductRoutes.get("/get-id/:id", getProductById);
-
-// Create a new product
-ProductRoutes.post("/post", createProduct);
-
-// Delete a product by ID
-ProductRoutes.delete("/delete/:id", removeProduct);
-
-// Update a product by ID
-ProductRoutes.put("/update/:id", updateProduct);
+// Protect all routes with authentication middleware
+ProductRoutes.get("/", authenticateToken, getAllProducts);
+ProductRoutes.get("/:category/get-all", authenticateToken, getProductsByCategory);
+ProductRoutes.get("/branch/:branch/get-all", authenticateToken, getProductsByBranch);
+ProductRoutes.get("/branch/:branch/category/:category/get-all", authenticateToken, getProductsByCategoryAndBranch);
+ProductRoutes.get("/get-id/:id", authenticateToken, getProductById);
+ProductRoutes.post("/post", authenticateToken, createProduct);
+ProductRoutes.delete("/delete/:id", authenticateToken, removeProduct);
+ProductRoutes.put("/update/:id", authenticateToken, updateProduct);
 
 export default ProductRoutes;
