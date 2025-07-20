@@ -20,7 +20,7 @@ import TransactionLogRoutes from "../app/modules/TransactionLog/TransactionLog.r
 import transactionLogger from "../middleware/transactionLogger.js";
 import { getSuperAdminDashboard } from "../controllers/dashboardController.js"; 
 import { getAllBranches } from "../controllers/branchController.js";
-
+import TableReservationRoutes from "../app/modules/TableReservation/TableReservation.routes.js";
 const routes = Router();
 
 routes.use(transactionLogger);
@@ -42,5 +42,5 @@ routes.post("/get-image-url", getImageUrl);
 routes.use("/transaction-logs", TransactionLogRoutes);
 routes.get("/superadmin/dashboard", getSuperAdminDashboard);
 routes.get("/branch", getAllBranches);
-
+routes.use("/reservation", TableReservationRoutes);
 export default routes;
