@@ -1,24 +1,52 @@
 import User from "./Users.model.js";
-import UserLog from "../UserLog/UserLog.model.js";
 import jwt from "jsonwebtoken";
-// Get all users
+import bcrypt from "bcrypt";
+
+// Get all users with pagination and search
 export async function getAllUsers(req, res) {
   try {
-    const result = await User.find();
-    res.status(200).json(result);
-  } catch (err) {
-    res.status(500).send({ error: err.message });
-  }
-}
+    // --- 1. Extract Query Parameters ---
+    const { search } = req.query;
+    // Parse page and limit, providing default values
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
 
-// Get users by branch
-export async function getUserByBranch(req, res) {
-  const branch = req.params.branch;
-  try {
-    const result = await User.find({ branch });
-    res.status(200).json(result);
+    // --- 2. Build Query Filter ---
+    let queryFilter = {};
+    if (search) {
+      queryFilter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    // --- 3. Execute Database Queries ---
+    const [totalItems, users] = await Promise.all([
+      User.countDocuments(queryFilter),
+      User.find(queryFilter)
+          .sort({ createdAt: -1 })
+          .limit(limit)
+          .skip(skip)
+    ]);
+
+    // --- 4. Calculate Pagination Details ---
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // --- 5. Send Formatted Response ---
+    res.status(200).json({
+      data: users,
+      pagination: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+        itemsPerPage: limit,
+      },
+    });
+
   } catch (err) {
-    res.status(500).send({ error: err.message });
+    console.error("Error in getAllUsers:", err);
+    res.status(500).send({ error: "An error occurred while fetching users." });
   }
 }
 
@@ -70,15 +98,6 @@ export async function loginUser(req, res) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // Log login time
-    await UserLog.create({
-      userEmail: user.email,
-      username: user.name || "no name",
-      loginTime: new Date(),
-      role: user.role,
-      branch:user.branch,
-    });
-
     const token = jwt.sign({ id: user._id, role: user.role }, "secretKey", { expiresIn: "24h" });
 
     // Remove password field from user object before sending response
@@ -106,26 +125,17 @@ export async function removeUser(req, res) {
   }
 }
 
-export async function logoutUser(req, res) {
-  const { email } = req.body;
-  try {
-    // Find the most recent login entry
-    const log = await UserLog.findOne({ userEmail: email }).sort({ createdAt: -1 });
-    if (log && !log.logoutTime) {
-      log.logoutTime = new Date();
-      await log.save();
-    }
-    res.status(200).json({ message: "Logout successful" });
-  } catch (err) {
-    res.status(500).send({ error: err.message });
-  }
-}
-
 // Update a user by ID
 export async function updateUser(req, res) {
   const id = req.params.id;
   const userData = req.body;
   try {
+    // If the password is being updated, it needs to be re-hashed.
+    if (userData.password) {
+        const salt = await bcrypt.genSalt(10);
+        userData.password = await bcrypt.hash(userData.password, salt);
+    }
+
     const result = await User.findByIdAndUpdate(id, userData, { new: true });
     if (result) {
       res.status(200).json(result);
@@ -137,9 +147,27 @@ export async function updateUser(req, res) {
   }
 }
 
+export async function logoutUser(req, res) {
+  try {
+    const { email } = req.body;
+
+    // You can perform additional logout-related tasks here if needed
+
+    res.status(200).json({ message: "Logout successful" });
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+}
+
+// Change password for an authenticated user
 export async function changePassword(req, res) {
-  const { userId } = req.user; // Assume userId is extracted from the authenticated token
+  // Assuming 'req.user.id' is populated by an authentication middleware
+  const userId = req.user?.id; 
   const { oldPassword, newPassword } = req.body;
+  
+  if (!userId) {
+    return res.status(401).json({ message: "Authentication error, user not found." });
+  }
 
   try {
     const user = await User.findById(userId);
@@ -153,9 +181,8 @@ export async function changePassword(req, res) {
       return res.status(401).json({ message: "Incorrect old password" });
     }
 
-    // Update the password and save the user
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    // The 'pre.save' hook in the model will automatically hash the new password
+    user.password = newPassword;
     await user.save();
 
     res.status(200).json({ message: "Password updated successfully" });

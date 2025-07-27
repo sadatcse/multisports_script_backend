@@ -28,19 +28,13 @@ const UserSchema = Schema(
       enum: ["admin", "user", "manager"], // Adjust roles as per your needs
       default: "user",
     },
-    counter: {
-      type: Number,
-      default: 0,
-    },
+
     status: {
       type: String,
       enum: ["active", "inactive"],
       default: "active",
     },
-    branch: {
-      type: String,
-      required: [true, "Please provide a branch"],
-    },
+
   },
   { timestamps: true }
 );

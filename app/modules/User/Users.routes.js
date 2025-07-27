@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   createUser,
   getAllUsers,
-  getUserByBranch,
+
   getUserById,
   removeUser,
   updateUser,
@@ -24,8 +24,8 @@ UserRoutes.post("/login", loginUser); // Login does not require a token
 UserRoutes.post("/post", createUser); // If creating a user should also be public
 
 // Protected routes (require authentication)
-UserRoutes.get("/", authenticateToken, getAllUsers);
-UserRoutes.get("/:branch/get-all", authenticateToken, getUserByBranch);
+UserRoutes.get("/",  getAllUsers);
+
 UserRoutes.get("/get-id/:id", authenticateToken, getUserById);
 UserRoutes.post("/logout", authenticateToken, logoutUser);
 UserRoutes.delete("/delete/:id", authenticateToken, removeUser);
