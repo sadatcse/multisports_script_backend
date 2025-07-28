@@ -117,3 +117,42 @@ export async function removeProduct(req, res) {
     res.status(500).send({ error: err.message });
   }
 }
+
+export async function searchByCode(req, res) {
+  try {
+    const { code } = req.query;
+
+    // Check if the product code is provided in the query
+    if (!code) {
+      return res.status(400).json({ message: "Product code is required." });
+    }
+
+    // First, attempt to find the exact product by its code
+    const product = await Product.findOne({ productCode: code }).populate("productCategory");
+
+    // If the product is found, return its data
+    if (product) {
+      return res.status(200).json({ 
+        message: "Product found successfully.", 
+        data: product 
+      });
+    }
+
+    // If no product is found, find related products for suggestion
+    // We use a regular expression for a partial, case-insensitive match
+    const suggestions = await Product.find({
+      productCode: { $regex: code, $options: "i" },
+    })
+    .limit(3) // Limit the number of suggestions to 3
+    .select("productName productCode -_id"); // Select only the name and code for the suggestion
+
+    // Return a 404 response with the suggestions
+    res.status(404).json({
+      message: "Product not found. Did you mean one of these?",
+      suggestions: suggestions,
+    });
+
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+}

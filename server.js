@@ -1,8 +1,7 @@
 import express from "express";
 import environment from "dotenv";
 import cors from "cors";
-
-import fileUpload from "express-fileupload";
+import { fileURLToPath } from 'url';
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
@@ -10,7 +9,7 @@ import { errorHandler } from "./middleware/errorMiddleware.js";
 import routes from "./routes/routes.js";
 import path from "path";
 import passport from "passport";
-
+import createImageUploadRoute from './config/uploadImage/imageupload.js';
 
 
 environment.config();
@@ -22,9 +21,15 @@ const port = process.env.PORT || 5000;
 // Connect to the database
 connectDB();
 
+// Get __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
 // Security middleware
 app.use(helmet({
-  hidePoweredBy: true,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    hidePoweredBy: true,
 }));
 
 app.use(passport.initialize());
@@ -39,14 +44,18 @@ app.use(limiter);
 
 // CORS configuration
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
-  'http://localhost:5173', 
   'http://localhost:3000', 
   'http://localhost:3001', 
-
+  'https://my.multisports.com.bd',
+  'http://my.multisports.com.bd',
 ];
 app.use(cors({
   origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin) || !origin) {
+    // Add this line to see the incoming origin in your server logs
+    console.log('>> REQUEST ORIGIN:', origin); 
+
+    const normalizedOrigin = origin?.endsWith('/') ? origin.slice(0, -1) : origin;
+    if (allowedOrigins.includes(normalizedOrigin) || !origin) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -58,21 +67,22 @@ app.use(cors({
 // Parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-  fileUpload({
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max file size
-  })
-);
+
 // Static files
-app.use(express.static("public"));
-// Routes
+app.use(express.static('public'));
+// app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/products/', createImageUploadRoute('uploads/products'));
 app.use("/api", routes);
+
+
 
 // Root route
 app.use(errorHandler);
 
-app.get("/", (req, res) => {
-  res.status(200).json({ message: "Server is running." });
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Error handling middleware

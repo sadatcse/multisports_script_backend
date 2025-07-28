@@ -83,6 +83,7 @@ export async function createUser(req, res) {
 // Login user
 export async function loginUser(req, res) {
   const { email, password } = req.body;
+
   try {
     const user = await User.findOne({ email });
     if (!user) {
@@ -127,23 +128,46 @@ export async function removeUser(req, res) {
 
 // Update a user by ID
 export async function updateUser(req, res) {
-  const id = req.params.id;
-  const userData = req.body;
+  const { id } = req.params;
+  const updateData = req.body;
+
   try {
-    // If the password is being updated, it needs to be re-hashed.
-    if (userData.password) {
-        const salt = await bcrypt.genSalt(10);
-        userData.password = await bcrypt.hash(userData.password, salt);
+    // 1. Find the user document by its ID
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const result = await User.findByIdAndUpdate(id, userData, { new: true });
-    if (result) {
-      res.status(200).json(result);
-    } else {
-      res.status(404).json({ message: "User not found" });
-    }
+    // 2. Update the user's fields from the request body
+    // This dynamically updates any fields passed in the request.
+    Object.keys(updateData).forEach((key) => {
+      // Prevent overwriting the password with an empty or null value
+      if (key === 'password' && !updateData.password) {
+        return; 
+      }
+      user[key] = updateData[key];
+    });
+
+    // 3. Save the updated user. 
+    // This will trigger the 'pre.save' hook in your model, which automatically
+    // hashes the password ONLY if it has been changed.
+    const updatedUser = await user.save();
+
+    // 4. BEST PRACTICE: Don't send the password hash back in the response.
+    const userResponse = updatedUser.toObject();
+    delete userResponse.password;
+    
+    res.status(200).json(userResponse);
+
   } catch (err) {
-    res.status(500).send({ error: err.message });
+    // This handles errors like a duplicate email address during an update
+    if (err.code === 11000) {
+      return res.status(409).json({ message: "An error occurred: the email may already be in use." });
+    }
+    
+    console.error("Error in updateUser:", err);
+    res.status(500).send({ error: "An error occurred while updating the user." });
   }
 }
 
