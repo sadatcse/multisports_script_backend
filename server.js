@@ -48,6 +48,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'http://localhost:3001', 
   'https://my.multisports.com.bd',
   'http://my.multisports.com.bd',
+  'https://multisports-script-front.vercel.app',
 ];
 app.use(cors({
   origin: (origin, callback) => {
