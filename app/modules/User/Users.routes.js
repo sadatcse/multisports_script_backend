@@ -14,7 +14,7 @@ import { authenticateToken } from "../../../middleware/authMiddleware.js";
 
 const UserRoutes = Router();
 
-UserRoutes.post("/login",authenticateToken, loginUser); 
+UserRoutes.post("/login", loginUser); 
 UserRoutes.post("/post",authenticateToken, createUser);
 
 
